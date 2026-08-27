@@ -1,5 +1,9 @@
 # Transkribator
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-45d8c0.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-45d8c0.svg)](https://www.python.org/downloads/)
+[![Powered by faster-whisper](https://img.shields.io/badge/powered%20by-faster--whisper-45d8c0.svg)](https://github.com/SYSTRAN/faster-whisper)
+
 **[Читать по-русски](README.md)**
 
 A simple tool: give it an audio recording (a meeting, a lecture,

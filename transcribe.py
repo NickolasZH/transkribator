@@ -3,7 +3,7 @@
 
 Использует faster-whisper (модель Whisper, ускоренная реализация на ctranslate2).
 Декодирование аудио выполняется библиотекой PyAV (пакет av), у которой ffmpeg
-встроен внутрь — отдельно устанавливать системный ffmpeg не требуется.
+встроен внутри — отдельно устанавливать системный ffmpeg не требуется.
 
 Использование:
     python transcribe.py records/запись.aac
@@ -13,6 +13,8 @@
 import argparse
 import os
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
 
 # На рабочем ноутбуке в системе включён локальный SOCKS-прокси (реестр Windows,
@@ -33,6 +35,10 @@ from faster_whisper import WhisperModel
 SUPPORTED_SUFFIXES = {
     ".aac", ".mp3", ".wav", ".m4a", ".flac", ".ogg", ".opus", ".wma", ".mp4",
 }
+
+# Файл, куда пишется журнал времени транскрибации (в корне проекта, рядом со скриптом).
+# Имя совпадает с уже существующей записью в .gitignore.
+LOG_PATH = Path(__file__).resolve().parent / "transcribe_log.txt"
 
 
 def parse_args() -> argparse.Namespace:
@@ -72,6 +78,34 @@ def format_timestamp(seconds: float) -> str:
     return f"{minutes:02d}:{sec:02d}"
 
 
+def format_duration(seconds: float) -> str:
+    """Человекочитаемая длительность процесса транскрибации, например '1м 23.4с'."""
+    minutes, sec = divmod(seconds, 60)
+    if minutes:
+        return f"{int(minutes)}м {sec:04.1f}с"
+    return f"{sec:.1f}с"
+
+
+def log_run(
+    audio_path: Path,
+    model_size: str,
+    device: str,
+    audio_duration: float | None,
+    elapsed_seconds: float,
+) -> None:
+    """Дописывает одну строку в transcribe.log с итогами запуска."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    audio_duration_str = format_timestamp(audio_duration) if audio_duration else "?"
+    speed = f"{audio_duration / elapsed_seconds:.2f}x" if audio_duration and elapsed_seconds else "?"
+    line = (
+        f"{timestamp} | файл={audio_path} | модель={model_size} | устройство={device} | "
+        f"длительность_аудио={audio_duration_str} | "
+        f"время_транскрибации={format_duration(elapsed_seconds)} | скорость={speed}"
+    )
+    with LOG_PATH.open("a", encoding="utf-8") as log_file:
+        log_file.write(line + "\n")
+
+
 def main() -> int:
     args = parse_args()
     audio_path: Path = args.audio_path
@@ -91,6 +125,12 @@ def main() -> int:
     print(f"Модель: {args.model}, устройство: {args.device}")
     print(f"Транскрибирую: {audio_path}")
 
+    # Замер времени: faster-whisper отдаёт сегменты "лениво" (генератором), поэтому
+    # реальная работа по распознаванию идёт не в model.transcribe(), а в цикле ниже,
+    # где мы этот генератор перебираем. Замеряем всё вместе — от загрузки модели
+    # до последнего сегмента, — это и есть "время, потраченное на транскрибацию".
+    start_time = time.perf_counter()
+
     segments, info = transcribe(audio_path, args.model, args.language, args.device)
 
     print(f"Определён язык: {info.language} (уверенность {info.language_probability:.2f})")
@@ -107,8 +147,14 @@ def main() -> int:
         full_text_parts.append(text)
         print(f"[{start} – {end}] {text}")
 
+    elapsed_seconds = time.perf_counter() - start_time
+
     output_path.write_text("\n".join(lines), encoding="utf-8")
+
+    log_run(audio_path, args.model, args.device, getattr(info, "duration", None), elapsed_seconds)
+
     print(f"\nГотово. Транскрипт сохранён в: {output_path}")
+    print(f"Время транскрибации: {format_duration(elapsed_seconds)} (записано в {LOG_PATH.name})")
     return 0
 
 

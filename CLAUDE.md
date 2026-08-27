@@ -25,7 +25,7 @@
 1. **Локально, Windows**: conda-окружение `asr`
    (`C:\Users\nicko\anaconda3\envs\asr`). Активируется `conda activate asr`.
 2. **Сервер, Linux Mint** (`<SERVER_USER>@<SERVER_HOST>:<SERVER_PORT>`): venv в
-   `~/transkribator/.venv`, без conda. На сервере нет прав root — venv
+   `~/python_projects/transkribator/.venv`, без conda. На сервере нет прав root — venv
    создан в обход `ensurepip` (см. `CHANGELOG.md`), pip доустановлен через
    `get-pip.py`. Не пытайся ставить пакеты через `apt` без прямого запроса
    пользователя ввести пароль sudo самостоятельно — пароли за пользователя

@@ -20,13 +20,13 @@ flac, ogg, opus, wma, mp4-звук), распознаёт речь и сохра
 
 ## Сервер
 
-Linux Mint, `<SERVER_USER>@<SERVER_HOST>:<SERVER_PORT>`, проект в `~/transkribator/`,
+Linux Mint, `<SERVER_USER>@<SERVER_HOST>:<SERVER_PORT>`, проект в `~/python_projects/transkribator/`,
 своё окружение `.venv` (без conda — создано штатным `python3 -m venv`,
 т.к. на сервере нет conda и нет прав root на `apt install`).
 
 ```bash
 ssh -p <SERVER_PORT> <SERVER_USER>@<SERVER_HOST>
-cd ~/transkribator
+cd ~/python_projects/transkribator
 .venv/bin/python transcribe.py records/запись.aac
 ```
 

@@ -28,7 +28,9 @@ Example output (`records/meeting.md`):
   required, it also runs on a plain CPU, just slower.
 - Python 3.10 or newer.
 - An audio file to turn into text: `aac`, `mp3`, `wav`, `m4a`, `flac`,
-  `ogg`, `opus`, `wma`, or audio from an `mp4`.
+  `ogg`, `opus`, `wma`, or audio from an `mp4`. All of these formats
+  were tested on 2026-08-28 and confirmed to work (see
+  [CHANGELOG.md](CHANGELOG.md)).
 - 1–3 GB of free disk space for the speech-recognition model (depends
   on which model size you pick, see the table below).
 
